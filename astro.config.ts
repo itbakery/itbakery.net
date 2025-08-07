@@ -23,7 +23,7 @@ const whenExternalScripts = (items: (() => AstroIntegration) | (() => AstroInteg
 
 export default defineConfig({
   output: 'static',
-  site: "https://itbakery.github.io/itbakery.net/",
+  site: "https://itbakery.github.io/",
   base: "itbakery.net",
   integrations: [
     tailwind({
