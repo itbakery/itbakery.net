@@ -26,9 +26,7 @@ export default defineConfig({
   site: "https://itbakery.github.io",
   base: "/itbakery.net/",
   integrations: [
-    tailwind({
-      applyBaseStyles: false,
-    }),
+    tailwind(),
     sitemap(),
     mdx(),
     icon({
