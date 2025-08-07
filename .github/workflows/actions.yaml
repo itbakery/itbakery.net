@@ -1,4 +1,6 @@
-name: GitHub Actions
+# .github/workflows/deploy.yml
+
+name: GitHub Actions CI/CD
 
 on:
   pull_request:
@@ -7,6 +9,12 @@ on:
   push:
     branches:
       - main
+
+# Add permissions for the deploy job
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   build:
@@ -18,24 +26,44 @@ jobs:
           - 20
           - 22
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Use Node.js v${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
-      - run: npm ci
-      - run: npm run build
-      # - run: npm test
 
-  check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Use Node.js 22
-        uses: actions/setup-node@v4
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      # - run: npm test # You can uncomment this if you have tests
+
+      - name: Upload build artifact for deployment
+        uses: actions/upload-pages-artifact@v3
         with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run check
+          # This should be the directory where your build output is located
+          path: ./dist
+
+  # New job to handle the deployment to GitHub Pages
+  deploy:
+    # This job needs the build job to complete successfully
+    needs: build
+    
+    # Only run this job on a push to the main branch
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    runs-on: ubuntu-latest
+    
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+      
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
